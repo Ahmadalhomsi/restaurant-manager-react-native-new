@@ -4,33 +4,52 @@ import { Button, Input, Text } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 
-const LoginScreen = () => {
+export const RegisterScreen = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const validateForm = () => {
+    if (!username || !password || !confirmPassword) {
+      setError("Tüm alanları doldurunuz");
+      return false;
+    }
+
+    if (password.length < 6) {
+      setError("Şifre en az 6 karakter olmalıdır");
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Şifreler eşleşmiyor");
+      return false;
+    }
+
+    return true;
   };
 
-  const navigateToRegister = () => {
-    router.push("/register");
+  const handleRegister = async () => {
+    
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.formContainer}>
-        <Text h3 style={styles.title}>Giriş Yap</Text>
+        <Text h3 style={styles.title}>Hesap Oluştur</Text>
+        
         <Input
           placeholder="Kullanıcı Adı"
           value={username}
           onChangeText={setUsername}
+          autoCapitalize="none"
           containerStyle={styles.inputContainer}
           disabled={loading}
-          autoCapitalize="none"
           leftIcon={{ type: 'ionicon', name: 'person-outline' }}
         />
+
         <Input
           placeholder="Şifre"
           value={password}
@@ -40,17 +59,32 @@ const LoginScreen = () => {
           disabled={loading}
           leftIcon={{ type: 'ionicon', name: 'lock-closed-outline' }}
         />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        <Input
+          placeholder="Şifre Tekrar"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          containerStyle={styles.inputContainer}
+          disabled={loading}
+          leftIcon={{ type: 'ionicon', name: 'lock-closed-outline' }}
+        />
+
+        {error ? (
+          <Text style={styles.error}>{error}</Text>
+        ) : null}
+
         <Button
-          title={loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
-          onPress={handleLogin}
+          title={loading ? "Hesap Oluşturuluyor..." : "Hesap Oluştur"}
+          onPress={handleRegister}
           containerStyle={styles.buttonContainer}
           loading={loading}
           disabled={loading}
         />
+
         <Button
-          title="Hesap Oluştur"
-          onPress={navigateToRegister}
+          title="Giriş Ekranına Dön"
+          onPress={() => router.back()}
           type="outline"
           containerStyle={styles.buttonContainer}
           disabled={loading}
@@ -91,4 +125,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default LoginScreen;
+export default RegisterScreen;
