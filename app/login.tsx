@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Input, Text } from "@rneui/themed";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { requestPermissionsAsync } from 'expo-notifications';
 
 const LoginScreen = () => {
   const [username, setUsername] = useState("");
@@ -17,6 +17,17 @@ const LoginScreen = () => {
   const navigateToRegister = () => {
     router.push("/register");
   };
+
+  useEffect(() => {
+    // Request permissions on app start
+    (async () => {
+      const { status } = await requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission for notifications is required!');
+      }
+    })();
+  }, []);
+
 
   return (
     <View style={styles.container}>
