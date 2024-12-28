@@ -1,8 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Input, Text } from "@rneui/themed";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import * as Notifications from 'expo-notifications';
+import { requestPermissionsAsync } from 'expo-notifications';
+
+// Configure notification handler
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const LoginScreen = () => {
   const [username, setUsername] = useState("");
@@ -16,6 +26,52 @@ const LoginScreen = () => {
 
   const navigateToRegister = () => {
     router.push("/register");
+  };
+
+  useEffect(() => {
+    // Request permissions on app start
+    (async () => {
+      const { status } = await Notifications.requestPermissionsAsync({
+        ios: {
+          allowAlert: true,
+          allowBadge: true,
+          allowSound: true,
+        },
+      });
+      
+      if (status !== 'granted') {
+        alert('Permission for notifications is required!');
+      }
+    })();
+  }, []);
+
+  const handleNotification = async () => {
+    try {
+      // Check if we have permission before scheduling
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        alert('You need to enable notifications permission first!');
+        return;
+      }
+
+      // Schedule the notification
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Hello!',
+          body: 'This is a test notification.',
+          data: { data: 'goes here' },
+        },
+        trigger: { 
+          seconds: 2,
+          channelId: 'default', // Required for Android
+        },
+      });
+
+      console.log('Notification scheduled');
+    } catch (error) {
+      console.error('Error scheduling notification:', error);
+      alert('Failed to schedule notification');
+    }
   };
 
   return (
@@ -54,6 +110,11 @@ const LoginScreen = () => {
           type="outline"
           containerStyle={styles.buttonContainer}
           disabled={loading}
+        />
+
+        <Button
+          title="Show Notification"
+          onPress={handleNotification}
         />
       </View>
     </View>
