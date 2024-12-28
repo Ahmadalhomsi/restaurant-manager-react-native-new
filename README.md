@@ -14,14 +14,22 @@ No	Feature	Öğrenci No / Ad  Soyad
 9	Authorization (OAuth / OpenID / JWT):	210201140 Ahmad Alhomsi  
 10	Cloud Service (AI):	210201082 Ahmet Açıkgöz  
 
-## 1. Hafta
+## Haftalar:
 
-- Sign in / Sign up Ekranları, UI (Ahmad Alhomsi)
-- Notification-Broadcast receiver test ve notification izni (Talha Tursun)
+### 1. Hafta
+
+- Sign in / Sign up Ekranları (Ahmad Alhomsi)
+- Notification-Broadcast receiver test ve notification permission (Talha Tursun)
 - Local Database (Emircan Duman)
 
-## 2. Hafta
+### 2. Hafta
 
 - REST API (Emircan Duman)
 - Location (Faruk Yahya Şahin)
+- Broadcast Receiver (Talha Tursun)
+- Customer ve Manager Screens, UI (Ahmad Alhomsi)
+- Connectivity (Ahmet Açıkgöz)
+
+## 3. Hafta
+
 - 
