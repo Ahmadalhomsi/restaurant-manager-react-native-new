@@ -24,7 +24,7 @@ const LoginScreen = () => {
   const handleLogin = async () => {
 
     if(username === "admin" && password === "admin") {
-      console.log("Admin Login successful");
+      router.push("/manager");
       return
     }
 
