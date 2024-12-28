@@ -13,7 +13,7 @@ app.use(express.json());
 
 
 // Notification
-const expo = new Expo({ projectId: 'test' });
+const expo = new Expo({ projectId: '6c231852-a9e3-4f41-a0ee-e0314748b198' });
 
 app.post('/send-notification', async (req, res) => {
   console.log('====================================');
