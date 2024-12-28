@@ -4,6 +4,7 @@ import { Button, Input, Text } from "@rneui/themed";
 import { useRouter } from "expo-router";
 import * as Notifications from 'expo-notifications';
 import { requestPermissionsAsync } from 'expo-notifications';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -22,8 +23,11 @@ const LoginScreen = () => {
   const router = useRouter();
 
   const handleLogin = async () => {
+    // Store the customer ID and role in AsyncStorage
+    await AsyncStorage.setItem("customerId", "2");
+    await AsyncStorage.setItem("customerRole", "Müşteri");
 
-    if(username === "admin" && password === "admin") {
+    if (username === "admin" && password === "admin") {
       router.push("/manager");
       return
     }
@@ -45,7 +49,7 @@ const LoginScreen = () => {
           allowSound: true,
         },
       });
-      
+
       if (status !== 'granted') {
         alert('Permission for notifications is required!');
       }
@@ -68,7 +72,7 @@ const LoginScreen = () => {
           body: 'This is a test notification.',
           data: { data: 'goes here' },
         },
-        trigger: { 
+        trigger: {
           seconds: 2,
           channelId: 'default', // Required for Android
         },

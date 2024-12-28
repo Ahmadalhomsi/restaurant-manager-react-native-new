@@ -4,10 +4,46 @@ const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const app = express();
+const { Expo } = require('expo-server-sdk');
+
 
 const PORT = 3000;
 
 app.use(express.json());
+
+
+// Notification
+const expo = new Expo({ projectId: '6c231852-a9e3-4f41-a0ee-e0314748b198' });
+
+app.post('/send-notification', async (req, res) => {
+  console.log('====================================');
+  console.log('Notification Request');
+  console.log('====================================');
+  const { pushToken, title, body, data } = req.body;
+
+  if (!Expo.isExpoPushToken(pushToken)) {
+    return res.status(400).send({ error: 'Invalid Expo Push Token' });
+  }
+
+  const messages = [
+    {
+      to: pushToken,
+      sound: 'default',
+      title,
+      body,
+      data,
+    },
+  ];
+
+  try {
+    const ticketChunk = await expo.sendPushNotificationsAsync(messages);
+    console.log(ticketChunk);
+    res.status(200).send({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: 'Failed to send notification' });
+  }
+});
 
 //! SQL VERİTABANI OLUŞTURMA.
 
