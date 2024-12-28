@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TextInput, ActivityIndicator } from 'react-native';
 import { Button, Header, Icon } from '@rneui/themed';
 import * as Utils from "../utils/index";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
+import api from '@/utils/api';
 
 
 interface Product {
@@ -14,6 +17,15 @@ interface OrderItem extends Product {
   quantity: number;
 }
 
+export const getPushToken = async () => {
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') {
+    await Notifications.requestPermissionsAsync();
+  }
+  const tokenData = await Notifications.getExpoPushTokenAsync();
+  return tokenData.data;
+};
+
 const CustomerOrderUI = () => {
   const [menu, setMenu] = useState<Product[]>([]);
   const [order, setOrder] = useState<OrderItem[]>([]);
@@ -24,9 +36,17 @@ const CustomerOrderUI = () => {
 
   useEffect(() => {
     fetchMenu();
+    loadCustomerId();
   }, []);
 
-
+  const loadCustomerId = async () => {
+    try {
+      const id = await AsyncStorage.getItem('customerId');
+      setCustomerId(id);
+    } catch (err) {
+      console.error('Error loading customer ID:', err);
+    }
+  };
 
   const fetchMenu = async () => {
     setLoading(true);
@@ -73,6 +93,28 @@ const CustomerOrderUI = () => {
     });
   };
 
+
+  const triggerNotification = async () => {
+    try {
+      console.log('Sending notification...');
+      const token = await getPushToken();
+      console.log('Push Token:', token);
+
+      const response = await api.post('/send-notification', {
+        pushToken: token,
+        title: 'New Order Received',
+        body: 'You have a new order to review!',
+        data: { orderId: 123 },
+      });
+      const result = response;
+      console.log("+++++++++++");
+      console.log(result);
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+
+  };
+
   const handlePlaceOrder = async () => {
     if (!customerId) {
       setError('Müşteri kimliği bulunamadı');
@@ -96,6 +138,8 @@ const CustomerOrderUI = () => {
       }
 
       console.log('Order created:', newOrder);
+
+      triggerNotification();
 
       // Create order details for each item using Utils.createOrderDetail
       const orderDetailPromises = order.map(item => {

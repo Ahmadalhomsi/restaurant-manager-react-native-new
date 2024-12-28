@@ -3,6 +3,31 @@ import { StyleSheet, View, Text, FlatList, TextInput, Alert } from 'react-native
 import { Button, Header, Icon, Tab, TabView } from '@rneui/themed';
 import * as Utils from "../utils/index";
 
+import * as Notifications from 'expo-notifications';
+import { getPushToken } from './customer';
+
+// Listener for notifications
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
+
+const triggerTestNotification = async () => {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Test Notification',
+      body: 'This is a test notification',
+      data: { customData: 'data goes here' },
+    },
+    trigger: null, // Immediate
+  });
+};
+
+
 // Separate MenuTab component
 const MenuTab = ({ products, onAddProduct, onDeleteProduct }: any) => {
   const [newProduct, setNewProduct] = useState({ name: '', price: '' });
@@ -103,14 +128,52 @@ const OrdersTab = ({ orders, onOrderStatus }: any) => (
   />
 );
 
+const NotificationsTab = ({ notifications }: any) => (
+  <FlatList
+    data={notifications}
+    keyExtractor={(item) => item.id}
+    renderItem={({ item }) => (
+      <View style={styles.notificationContainer}>
+        <Text style={styles.notificationTitle}>{item.title}</Text>
+        <Text style={styles.notificationBody}>{item.body}</Text>
+      </View>
+    )}
+  />
+);
+
 const RestaurantManagement = () => {
   const [orders, setOrders] = useState<any>([]);
   const [products, setProducts] = useState([]);
   const [index, setIndex] = useState(0);
+  const [notifications, setNotifications] = useState<{ id: string; title: string | null; body: string | null }[]>([]);
+
 
   useEffect(() => {
     fetchOrders();
     fetchProducts();
+
+    const registerForPushNotifications = async () => {
+      const token = await getPushToken();
+      console.log('Admin Push Token:', token);
+      // Send this token to your backend for storage
+    };
+
+    registerForPushNotifications();
+
+    // Listener for incoming notifications
+    const subscription = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notification received:', notification);
+      setNotifications(prev => [
+        ...prev,
+        {
+          id: notification.request.identifier,
+          title: notification.request.content.title,
+          body: notification.request.content.body,
+        },
+      ]);
+    });
+
+    return () => subscription.remove();
   }, []);
 
   const fetchOrders = async () => {
@@ -140,7 +203,7 @@ const RestaurantManagement = () => {
           order.id === orderId ? { ...order, is_confirmed: status } : order
         );
         setOrders(updatedOrders);
-        
+
         // Show success message
         Alert.alert(
           'Success',
@@ -199,6 +262,7 @@ const RestaurantManagement = () => {
         rightComponent={<Icon name="refresh" color="#fff" onPress={() => {
           fetchOrders();
           fetchProducts();
+          triggerTestNotification();
         }} />}
         containerStyle={styles.header}
       />
@@ -207,24 +271,29 @@ const RestaurantManagement = () => {
         value={index}
         onChange={setIndex}
         indicatorStyle={{ backgroundColor: '#007bff' }}
+ 
       >
-        <Tab.Item title="Orders" />
-        <Tab.Item title="Menu" />
+        <Tab.Item title="Orders"  titleStyle={{margin:-4}} />
+        <Tab.Item title="Menu"  titleStyle={{margin:-4}} />
+        <Tab.Item title="Notifications"  titleStyle={{margin:-4}}/>
       </Tab>
 
       <TabView value={index} onChange={setIndex} animationType="spring">
         <TabView.Item style={styles.tabContent}>
-          <OrdersTab 
-            orders={orders} 
+          <OrdersTab
+            orders={orders}
             onOrderStatus={handleOrderStatus}
           />
         </TabView.Item>
         <TabView.Item style={styles.tabContent}>
-          <MenuTab 
+          <MenuTab
             products={products}
             onAddProduct={handleAddProduct}
             onDeleteProduct={handleDeleteProduct}
           />
+        </TabView.Item>
+        <TabView.Item style={styles.tabContent}>
+          <NotificationsTab notifications={notifications} />
         </TabView.Item>
       </TabView>
     </View>
@@ -232,6 +301,23 @@ const RestaurantManagement = () => {
 };
 
 const styles = StyleSheet.create({
+  notificationContainer: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  notificationTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  notificationBody: {
+    fontSize: 14,
+    color: '#555',
+  },
+  testNotificationButton: {
+    marginTop: 10,
+    backgroundColor: '#007bff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
