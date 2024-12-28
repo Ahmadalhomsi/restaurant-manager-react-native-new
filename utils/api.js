@@ -1,27 +1,31 @@
-// utils/api.js
-
 import axios from "axios";
 import { NativeModules } from "react-native";
 
-let host = "localhost";
-
+let host = "192.168.1.22"; // IP ADRESS XXX.XXX.X.XX
 const PORT = 3000;
 
-if (NativeModules.SourceCode && NativeModules.SourceCode.scriptURL) {
-  const scriptURL = NativeModules.SourceCode.scriptURL;
+try {
+  if (NativeModules.SourceCode && NativeModules.SourceCode.scriptURL) {
+    const scriptURL = NativeModules.SourceCode.scriptURL;
 
-  if (scriptURL.startsWith("http")) {
-    host = scriptURL.split("://")[1].split(":")[0];
-  } else if (scriptURL.startsWith("https")) {
-    host = scriptURL.split("://")[1].split(":")[0];
+    if (scriptURL.startsWith("http")) {
+      host = scriptURL.split("://")[1].split(":")[0];
+    } else if (scriptURL.startsWith("https")) {
+      host = scriptURL.split("://")[1].split(":")[0];
+    } else {
+      console.warn("Unrecognized scriptURL format:", scriptURL);
+    }
   } else {
-    console.warn("Unrecognized scriptURL format:", scriptURL);
+    console.warn("Fallback to default host because scriptURL is unavailable.");
   }
-} else {
-  console.error("Unable to get scriptURL from NativeModules.SourceCode");
+} catch (error) {
+  console.error("Error determining host:", error);
 }
 
-const API_URL = `http://${host}:${PORT}`;
+let API_URL = `http://${host}:${PORT}`;
+if (process.env.NODE_ENV === "production") {
+  API_URL = "https://your-production-server.com";
+}
 
 const api = axios.create({
   baseURL: API_URL,

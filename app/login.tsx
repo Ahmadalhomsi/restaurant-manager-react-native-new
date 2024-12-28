@@ -22,6 +22,13 @@ const LoginScreen = () => {
   const router = useRouter();
 
   const handleLogin = async () => {
+
+    if(username === "admin" && password === "admin") {
+      router.push("/manager");
+      return
+    }
+
+    router.push("/customer");
   };
 
   const navigateToRegister = () => {
