@@ -8,7 +8,6 @@ import api from '@/utils/api';
 import { router} from "expo-router";
 
 
-
 interface Product {
   id: number;
   name: string;
@@ -67,9 +66,14 @@ const CustomerOrderUI = () => {
     }
   };
 
+  const navigateToProfile = () => {
+    router.push("/profile");
+  }
+
   const navigateToLocation = () => {
     router.push("/location");
-  };
+  }
+
 
   const handleAddToOrder = (item: Product) => {
     setOrder(prevOrder => {
@@ -291,6 +295,13 @@ const CustomerOrderUI = () => {
         </View>
       )}
       <Button
+          title="Profil Fotoğrafı"
+          onPress={navigateToProfile}
+          type="outline"
+          containerStyle={styles.buttonContainer}
+          disabled={loading}
+        />
+        <Button
           title="Konum"
           onPress={navigateToLocation}
           type="outline"
