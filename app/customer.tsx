@@ -70,6 +70,10 @@ const CustomerOrderUI = () => {
     router.push("/profile");
   }
 
+  const navigateToLocation = () => {
+    router.push("/location");
+  }
+
 
   const handleAddToOrder = (item: Product) => {
     setOrder(prevOrder => {
@@ -293,6 +297,13 @@ const CustomerOrderUI = () => {
       <Button
           title="Profil Fotoğrafı"
           onPress={navigateToProfile}
+          type="outline"
+          containerStyle={styles.buttonContainer}
+          disabled={loading}
+        />
+        <Button
+          title="Konum"
+          onPress={navigateToLocation}
           type="outline"
           containerStyle={styles.buttonContainer}
           disabled={loading}
