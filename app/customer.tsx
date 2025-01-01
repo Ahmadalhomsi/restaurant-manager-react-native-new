@@ -5,6 +5,7 @@ import * as Utils from "../utils/index";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import api from '@/utils/api';
+import { router} from "expo-router";
 
 
 interface Product {
@@ -64,6 +65,11 @@ const CustomerOrderUI = () => {
       setLoading(false);
     }
   };
+
+  const navigateToProfile = () => {
+    router.push("/profile");
+  }
+
 
   const handleAddToOrder = (item: Product) => {
     setOrder(prevOrder => {
@@ -284,6 +290,13 @@ const CustomerOrderUI = () => {
           </View>
         </View>
       )}
+      <Button
+          title="Profil Fotoğrafı"
+          onPress={navigateToProfile}
+          type="outline"
+          containerStyle={styles.buttonContainer}
+          disabled={loading}
+        />
     </View>
   );
 };
@@ -335,6 +348,10 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     flex: 1,
+  },
+  buttonContainer: {
+    marginVertical: 10,
+    borderRadius: 8,
   },
   orderContainer: {
     backgroundColor: '#fff',
