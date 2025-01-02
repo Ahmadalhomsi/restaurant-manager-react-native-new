@@ -23,9 +23,6 @@ try {
 }
 
 let API_URL = `http://${host}:${PORT}`;
-if (process.env.NODE_ENV === "production") {
-  API_URL = "https://your-production-server.com";
-}
 
 const api = axios.create({
   baseURL: API_URL,
