@@ -1,8 +1,8 @@
-# Mobil Programlama Projesi 
+# Mobile Programming Project
 
-## Özellikler
+## Features
 
-No	Feature	Öğrenci No / Ad  Soyad  
+No	Feature	Student No / Name Surname
 1	Storage / Basic Data:	210201035 Faruk Yahya Şahin  
 2	Local Database (Room / CoreData / Document):	210201043 Emircan Duman  
 3	RESTFul API (CRUD):	210201043 Emircan Duman  
@@ -14,15 +14,15 @@ No	Feature	Öğrenci No / Ad  Soyad
 9	Authorization (OAuth / OpenID / JWT):	210201140 Ahmad Alhomsi  
 10	Cloud Service (AI):	210201082 Ahmet Açıkgöz  
 
-## Haftalar:
+## Weeks:
 
-### 1. Hafta
+### 1st Week
 
 - Sign in / Sign up Ekranları (Ahmad Alhomsi)
 - Notification-Broadcast receiver test ve notification permission (Talha Tursun)
 - Local Database (Emircan Duman)
 
-### 2. Hafta
+### 2nd Week
 
 - REST API (Emircan Duman)
 - Location (Faruk Yahya Şahin)
@@ -30,6 +30,10 @@ No	Feature	Öğrenci No / Ad  Soyad
 - Customer ve Manager Screens, UI (Ahmad Alhomsi)
 - Connectivity (Ahmet Açıkgöz)
 
-## 3. Hafta
+## 3rd Week
 
-- 
+- Chatbot (Ahmet Açıkgöz)
+- Storage (Faruk Yahya Şahin)
+- Background Process (Talha Tursun)
+- Authentication + Authorization (Ahmad Alhomsi)
+
