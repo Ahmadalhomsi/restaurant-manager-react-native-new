@@ -35,5 +35,5 @@ No	Feature	Student No / Name Surname
 - Chatbot (Ahmet Açıkgöz)
 - Storage (Faruk Yahya Şahin)
 - Background Process (Talha Tursun)
-- Authentication + Authorization (Ahmad Alhomsi)
+- Authentication + Authorization, Full UI Update (Ahmad Alhomsi)
 
