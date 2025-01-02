@@ -108,20 +108,20 @@ const CustomerOrderUI = () => {
     const orderSummary = order
       .map(item => `${item.name} (${item.quantity}x) - ${(item.price * item.quantity).toFixed(2)} TL`)
       .join('\n');
-  
+
     const totalAmount = order
       .reduce((sum, item) => sum + (item.price * item.quantity), 0)
       .toFixed(2);
-  
+
     return `Yeni Sipariş Detayları:\n\n${orderSummary}\n\nToplam: ${totalAmount} TL`;
   };
-  
+
   const triggerNotification = async () => {
     try {
       console.log('Sending notification...');
       const token = await getPushToken();
       console.log('Push Token:', token);
-  
+
       const notificationData = {
         pushToken: token,
         title: 'Yeni Sipariş Alındı',
@@ -141,7 +141,7 @@ const CustomerOrderUI = () => {
           }
         },
       };
-  
+
       const response = await api.post('/send-notification', notificationData);
       console.log("Notification Response:", response);
     } catch (error) {
@@ -204,6 +204,17 @@ const CustomerOrderUI = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      // Clear all stored data
+      await AsyncStorage.clear();
+      // Navigate to login screen
+      router.replace("/login");
+    } catch (err) {
+      console.error('Error during logout:', err);
+      setError('Çıkış yapılırken bir hata oluştu');
+    }
+  };
 
   if (loading && menu.length === 0) {
     return (
@@ -222,15 +233,23 @@ const CustomerOrderUI = () => {
           style: styles.headerTitle,
         }}
         rightComponent={
-          <View style={styles.cartIcon}>
-            <Icon name="shopping-cart" color="#fff" />
-            {order.length > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>
-                  {order.reduce((sum, item) => sum + item.quantity, 0)}
-                </Text>
-              </View>
-            )}
+          <View style={styles.headerRight}>
+            <View style={styles.cartIcon}>
+              <Icon name="shopping-cart" color="#fff" />
+              {order.length > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {order.reduce((sum, item) => sum + item.quantity, 0)}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <Icon
+              name="logout"
+              color="#fff"
+              onPress={handleLogout}
+              containerStyle={styles.logoutIcon}
+            />
           </View>
         }
         containerStyle={styles.header}
@@ -247,104 +266,129 @@ const CustomerOrderUI = () => {
           />
         </View>
       ) : (
-        <View style={styles.contentContainer}>
-          <View style={styles.menuContainer}>
-            <Text style={styles.sectionTitle}>Menü</Text>
-            <FlatList
-              data={menu}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <View style={styles.menuItem}>
-                  <Text style={styles.menuItemName}>{item.name}</Text>
-                  <Text style={styles.menuItemPrice}>
-                    {item.price.toFixed(2)} TL
-                  </Text>
-                  <Button
-                    title="Ekle"
-                    type="outline"
-                    buttonStyle={styles.button}
-                    onPress={() => handleAddToOrder(item)}
-                  />
-                </View>
-              )}
-            />
+        <>
+          <View style={styles.contentContainer}>
+            <View style={styles.menuContainer}>
+              <Text style={styles.sectionTitle}>Menü</Text>
+              <FlatList
+                data={menu}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.menuItem}>
+                    <Text style={styles.menuItemName}>{item.name}</Text>
+                    <Text style={styles.menuItemPrice}>
+                      {item.price.toFixed(2)} TL
+                    </Text>
+                    <Button
+                      title="Ekle"
+                      type="outline"
+                      buttonStyle={styles.button}
+                      onPress={() => handleAddToOrder(item)}
+                    />
+                  </View>
+                )}
+              />
+            </View>
+
+            <View style={styles.orderContainer}>
+              <Text style={styles.sectionTitle}>Siparişiniz</Text>
+              <TextInput
+                style={styles.tableInput}
+                placeholder="Masa numarası giriniz"
+                value={tableNumber}
+                onChangeText={setTableNumber}
+                keyboardType="numeric"
+              />
+              <FlatList
+                data={order}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.orderItem}>
+                    <Text style={styles.orderItemName}>
+                      {item.name} x {item.quantity}
+                    </Text>
+                    <Text style={styles.orderItemPrice}>
+                      {(item.price * item.quantity).toFixed(2)} TL
+                    </Text>
+                    <Button
+                      title="Çıkar"
+                      type="outline"
+                      buttonStyle={styles.button}
+                      onPress={() => handleRemoveFromOrder(item)}
+                    />
+                  </View>
+                )}
+                ListFooterComponent={() => (
+                  order.length > 0 ? (
+                    <View style={styles.totalContainer}>
+                      <Text style={styles.totalText}>
+                        Toplam: {order.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)} TL
+                      </Text>
+                    </View>
+                  ) : null
+                )}
+              />
+              <Button
+                title={loading ? 'Sipariş Gönderiliyor...' : 'Siparişi Gönder'}
+                type="solid"
+                buttonStyle={styles.placeOrderButton}
+                onPress={handlePlaceOrder}
+                disabled={loading || order.length === 0 || tableNumber.trim() === ''}
+              />
+            </View>
           </View>
 
-          <View style={styles.orderContainer}>
-            <Text style={styles.sectionTitle}>Siparişiniz</Text>
-            <TextInput
-              style={styles.tableInput}
-              placeholder="Masa numarası giriniz"
-              value={tableNumber}
-              onChangeText={setTableNumber}
-              keyboardType="numeric"
-            />
-            <FlatList
-              data={order}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <View style={styles.orderItem}>
-                  <Text style={styles.orderItemName}>
-                    {item.name} x {item.quantity}
-                  </Text>
-                  <Text style={styles.orderItemPrice}>
-                    {(item.price * item.quantity).toFixed(2)} TL
-                  </Text>
-                  <Button
-                    title="Çıkar"
-                    type="outline"
-                    buttonStyle={styles.button}
-                    onPress={() => handleRemoveFromOrder(item)}
-                  />
-                </View>
-              )}
-              ListFooterComponent={() => (
-                order.length > 0 ? (
-                  <View style={styles.totalContainer}>
-                    <Text style={styles.totalText}>
-                      Toplam: {order.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)} TL
-                    </Text>
-                  </View>
-                ) : null
-              )}
+          <View style={styles.navigationButtons}>
+            <Button
+              title="Profil Fotoğrafı"
+              onPress={navigateToProfile}
+              type="outline"
+              containerStyle={styles.navigationButton}
+              disabled={loading}
             />
             <Button
-              title={loading ? 'Sipariş Gönderiliyor...' : 'Siparişi Gönder'}
-              type="solid"
-              buttonStyle={styles.placeOrderButton}
-              onPress={handlePlaceOrder}
-              disabled={loading || order.length === 0 || tableNumber.trim() === ''}
+              title="Konum"
+              onPress={navigateToLocation}
+              type="outline"
+              containerStyle={styles.navigationButton}
+              disabled={loading}
+            />
+            <Button
+              title="Yemek Öner"
+              onPress={() => router.push("/chatbot")}
+              type="outline"
+              containerStyle={styles.navigationButton}
+              disabled={loading}
             />
           </View>
-        </View>
+        </>
       )}
-      <Button
-        title="Profil Fotoğrafı"
-        onPress={navigateToProfile}
-        type="outline"
-        containerStyle={styles.buttonContainer}
-        disabled={loading}
-      />
-      <Button
-        title="Konum"
-        onPress={navigateToLocation}
-        type="outline"
-        containerStyle={styles.buttonContainer}
-        disabled={loading}
-      />
-      <Button
-        title="Yemek Öner"
-        onPress={() => router.push("/chatbot")}
-        type="outline"
-        containerStyle={styles.buttonContainer}
-        disabled={loading}
-      />
-
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoutIcon: {
+    marginLeft: 15,
+  },
+  navigationButtons: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  navigationButton: {
+    marginVertical: 6,
+    borderRadius: 8,
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 16,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -380,10 +424,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
-  },
-  contentContainer: {
-    flex: 1,
-    padding: 16,
   },
   menuContainer: {
     backgroundColor: '#fff',
