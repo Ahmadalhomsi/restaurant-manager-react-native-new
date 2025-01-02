@@ -308,6 +308,14 @@ const CustomerOrderUI = () => {
           containerStyle={styles.buttonContainer}
           disabled={loading}
         />
+        <Button
+  title="Yemek Öner"
+  onPress={() => router.push("sc")}
+  type="outline"
+  containerStyle={styles.buttonContainer}
+  disabled={loading}
+/>
+
     </View>
   );
 };
