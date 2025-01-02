@@ -33,7 +33,7 @@ const LoginScreen = () => {
     try {
       const customerId = await AsyncStorage.getItem("customerId");
       const customerRole = await AsyncStorage.getItem("customerRole");
-      
+
       if (customerId && customerRole) {
         router.replace(customerRole === "Admin" ? "/manager" : "/customer");
       }
@@ -132,7 +132,7 @@ const LoginScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
@@ -223,6 +223,18 @@ const LoginScreen = () => {
             color: "#007bff"
           }}
         />
+
+        <Button
+          title="İnternet Bağlantısını Kontrol Et"
+          onPress={() => router.push("/connectivity")}
+          type="clear"
+          containerStyle={styles.connectivityButton}
+          icon={{
+            name: "wifi",
+            size: 20,
+            color: "#007bff"
+          }}
+        />
       </View>
     </KeyboardAvoidingView>
   );
@@ -259,6 +271,9 @@ const styles = StyleSheet.create({
   },
   notificationButton: {
     marginTop: 20,
+  },
+  connectivityButton: {
+    marginTop: 10,
   },
   error: {
     color: "#dc3545",
