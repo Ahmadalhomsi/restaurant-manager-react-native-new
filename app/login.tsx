@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import * as Notifications from 'expo-notifications';
 import { requestPermissionsAsync } from 'expo-notifications';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Utils from "../utils/index";
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -23,17 +24,50 @@ const LoginScreen = () => {
   const router = useRouter();
 
   const handleLogin = async () => {
-    // Store the customer ID and role in AsyncStorage
-    await AsyncStorage.setItem("customerId", "2");
-    await AsyncStorage.setItem("customerRole", "Müşteri");
+    try {
+      setLoading(true);
+      setError("");
 
-    if (username === "admin" && password === "admin") {
-      router.push("/manager");
-      return
+      // Get all customers
+      const customers = await Utils.getAllCustomers();
+
+      if (!customers) {
+        setError("Sunucu bağlantısında hata oluştu");
+        return;
+      }
+
+      // Find the customer with matching username
+      const customer = customers.find((c: any) => c.username === username);
+
+      if (!customer) {
+        setError("Kullanıcı bulunamadı");
+        return;
+      }
+
+      // Check password
+      if (customer.password !== password) {
+        setError("Geçersiz şifre");
+        return;
+      }
+
+      // Store the customer ID and role in AsyncStorage
+      await AsyncStorage.setItem("customerId", customer.id.toString());
+      await AsyncStorage.setItem("customerRole", customer.role);
+
+      // Navigate based on role
+      if (customer.role === "Admin") {
+        router.replace("/manager");
+      } else {
+        router.replace("/customer");
+      }
+    } catch (err) {
+      setError("Giriş yapılırken bir hata oluştu");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/customer");
   };
+
 
   const navigateToRegister = () => {
     router.push("/register");
