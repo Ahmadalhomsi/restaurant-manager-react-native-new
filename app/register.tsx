@@ -3,6 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { Button, Input, Text } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import * as Utils from "../utils/index";
 
 export const RegisterScreen = () => {
   const [username, setUsername] = useState("");
@@ -32,7 +33,49 @@ export const RegisterScreen = () => {
   };
 
   const handleRegister = async () => {
-    
+    try {
+      if (!validateForm()) return;
+
+      setLoading(true);
+      setError("");
+
+      // Check if username already exists
+      const existingCustomers = await Utils.getAllCustomers();
+      
+      if (existingCustomers && existingCustomers.some((customer : any) => 
+        customer.username.toLowerCase() === username.toLowerCase()
+      )) {
+        setError("Bu kullanıcı adı zaten kullanımda");
+        return;
+      }
+
+      // Create new customer
+      const newCustomer = {
+        username: username.trim(),
+        password,
+        role: "Müşteri" // Default role for new registrations
+      };
+
+      const createdCustomer = await Utils.createCustomer(newCustomer);
+
+      if (!createdCustomer) {
+        setError("Hesap oluşturulurken bir hata oluştu");
+        return;
+      }
+
+      // Store user data in AsyncStorage
+      await AsyncStorage.setItem("customerId", createdCustomer.id.toString());
+      await AsyncStorage.setItem("customerRole", createdCustomer.role);
+
+      // Navigate to customer screen
+      router.replace("/customer");
+
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError("Hesap oluşturulurken bir hata oluştu");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
