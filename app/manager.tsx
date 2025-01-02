@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, TextInput, Alert } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { Button, Header, Icon, Tab, TabView } from '@rneui/themed';
 import * as Utils from "../utils/index";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { getPushToken } from './customer';
+import { router } from "expo-router";
 
 // Listener for notifications
 Notifications.setNotificationHandler({
@@ -146,6 +147,7 @@ const RestaurantManagement = () => {
   const [products, setProducts] = useState([]);
   const [index, setIndex] = useState(0);
   const [notifications, setNotifications] = useState<{ id: string; title: string | null; body: string | null }[]>([]);
+  const [loading, setLoading] = useState(false);
 
 
   useEffect(() => {
@@ -254,36 +256,98 @@ const RestaurantManagement = () => {
     );
   };
 
+  const handleLogout = async () => {
+    try {
+      setLoading(true);
+      await AsyncStorage.clear();
+      router.replace("/login");
+    } catch (error) {
+      console.error('Error during logout:', error);
+      Alert.alert('Error', 'Failed to logout. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchOrders(),
+        fetchProducts(),
+        triggerTestNotification()
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Header
-        leftComponent={<Icon name="menu" color="#fff" />}
-        centerComponent={{ text: 'Restaurant Management', style: styles.headerTitle }}
-        rightComponent={<Icon name="refresh" color="#fff" onPress={() => {
-          fetchOrders();
-          fetchProducts();
-          triggerTestNotification();
-        }} />}
+        leftComponent={
+          <Icon
+            name="logout"
+            color="#fff"
+            onPress={handleLogout}
+            disabled={loading}
+          />
+        }
+        centerComponent={{
+          text: 'Restaurant Management',
+          style: styles.headerTitle
+        }}
+        rightComponent={
+          <View style={styles.headerRight}>
+            <Icon
+              name="refresh"
+              color="#fff"
+              onPress={handleRefresh}
+              disabled={loading}
+            />
+          </View>
+        }
         containerStyle={styles.header}
       />
 
       <Tab
         value={index}
         onChange={setIndex}
-        indicatorStyle={{ backgroundColor: '#007bff' }}
- 
+        indicatorStyle={styles.tabIndicator}
       >
-        <Tab.Item title="Orders"  titleStyle={{margin:-4}} />
-        <Tab.Item title="Menu"  titleStyle={{margin:-4}} />
-        <Tab.Item title="Notifications"  titleStyle={{margin:-4}}/>
+        <Tab.Item
+          title="Orders"
+          titleStyle={styles.tabTitle}
+          containerStyle={styles.tabContainer}
+        />
+        <Tab.Item
+          title="Menu"
+          titleStyle={styles.tabTitle}
+          containerStyle={styles.tabContainer}
+        />
+        <Tab.Item
+          title="Notifications"
+          titleStyle={styles.tabTitle}
+          containerStyle={styles.tabContainer}
+        />
       </Tab>
 
-      <TabView value={index} onChange={setIndex} animationType="spring">
+      <TabView
+        value={index}
+        onChange={setIndex}
+        animationType="spring"
+      >
         <TabView.Item style={styles.tabContent}>
-          <OrdersTab
-            orders={orders}
-            onOrderStatus={handleOrderStatus}
-          />
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007bff" />
+            </View>
+          ) : (
+            <OrdersTab
+              orders={orders}
+              onOrderStatus={handleOrderStatus}
+            />
+          )}
         </TabView.Item>
         <TabView.Item style={styles.tabContent}>
           <MenuTab
@@ -301,19 +365,56 @@ const RestaurantManagement = () => {
 };
 
 const styles = StyleSheet.create({
-  notificationContainer: {
-    padding: 15,
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabIndicator: {
+    backgroundColor: '#007bff',
+    height: 3,
+  },
+  tabTitle: {
+    margin: -4,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  tabContainer: {
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: '#e0e0e0',
+  },
+  // Add these styles to your existing StyleSheet
+  notificationContainer: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   notificationTitle: {
     fontWeight: 'bold',
     fontSize: 16,
+    marginBottom: 5,
+    color: '#333',
   },
   notificationBody: {
     fontSize: 14,
-    color: '#555',
+    color: '#666',
+    lineHeight: 20,
   },
+
   testNotificationButton: {
     marginTop: 10,
     backgroundColor: '#007bff',
