@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
-import { Button, Input, Text } from "@rneui/themed";
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import { Button, Input, Text, Icon } from "@rneui/themed";
 import { useRouter } from "expo-router";
 import * as Notifications from 'expo-notifications';
-import { requestPermissionsAsync } from 'expo-notifications';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Utils from "../utils/index";
 
@@ -21,61 +20,30 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleLogin = async () => {
+  useEffect(() => {
+    checkNotificationPermissions();
+    checkExistingSession();
+  }, []);
+
+  const checkExistingSession = async () => {
     try {
-      setLoading(true);
-      setError("");
-
-      // Get all customers
-      const customers = await Utils.getAllCustomers();
-
-      if (!customers) {
-        setError("Sunucu bağlantısında hata oluştu");
-        return;
-      }
-
-      // Find the customer with matching username
-      const customer = customers.find((c: any) => c.username === username);
-
-      if (!customer) {
-        setError("Kullanıcı bulunamadı");
-        return;
-      }
-
-      // Check password
-      if (customer.password !== password) {
-        setError("Geçersiz şifre");
-        return;
-      }
-
-      // Store the customer ID and role in AsyncStorage
-      await AsyncStorage.setItem("customerId", customer.id.toString());
-      await AsyncStorage.setItem("customerRole", customer.role);
-
-      // Navigate based on role
-      if (customer.role === "Admin") {
-        router.replace("/manager");
-      } else {
-        router.replace("/customer");
+      const customerId = await AsyncStorage.getItem("customerId");
+      const customerRole = await AsyncStorage.getItem("customerRole");
+      
+      if (customerId && customerRole) {
+        router.replace(customerRole === "Admin" ? "/manager" : "/customer");
       }
     } catch (err) {
-      setError("Giriş yapılırken bir hata oluştu");
-      console.error(err);
-    } finally {
-      setLoading(false);
+      console.error("Session check error:", err);
     }
   };
 
-
-  const navigateToRegister = () => {
-    router.push("/register");
-  };
-
-  useEffect(() => {
-    // Request permissions on app start
-    (async () => {
+  const checkNotificationPermissions = async () => {
+    try {
       const { status } = await Notifications.requestPermissionsAsync({
         ios: {
           allowAlert: true,
@@ -83,86 +51,180 @@ const LoginScreen = () => {
           allowSound: true,
         },
       });
+      setNotificationStatus(status);
 
       if (status !== 'granted') {
-        alert('Permission for notifications is required!');
+        console.log('Notification permissions not granted');
       }
-    })();
-  }, []);
-
-  const handleNotification = async () => {
-    try {
-      // Check if we have permission before scheduling
-      const { status } = await Notifications.getPermissionsAsync();
-      if (status !== 'granted') {
-        alert('You need to enable notifications permission first!');
-        return;
-      }
-
-      // Schedule the notification
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Hello!',
-          body: 'This is a test notification.',
-          data: { data: 'goes here' },
-        },
-        trigger: {
-          seconds: 2,
-          channelId: 'default', // Required for Android
-        },
-      });
-
-      console.log('Notification scheduled');
-    } catch (error) {
-      console.error('Error scheduling notification:', error);
-      alert('Failed to schedule notification');
+    } catch (err) {
+      console.error("Permission check error:", err);
     }
   };
 
+  const handleLogin = async () => {
+    if (!username.trim() || !password.trim()) {
+      setError("Lütfen tüm alanları doldurun");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const customers = await Utils.getAllCustomers();
+
+      if (!customers) {
+        throw new Error("Sunucu bağlantısında hata oluştu");
+      }
+
+      const customer = customers.find((c: any) => c.username.toLowerCase() === username.toLowerCase());
+
+      if (!customer) {
+        throw new Error("Kullanıcı bulunamadı");
+      }
+
+      if (customer.password !== password) {
+        throw new Error("Geçersiz şifre");
+      }
+
+      await AsyncStorage.multiSet([
+        ["customerId", customer.id.toString()],
+        ["customerRole", customer.role]
+      ]);
+
+      router.replace(customer.role === "Admin" ? "/manager" : "/customer");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Giriş yapılırken bir hata oluştu");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNotification = async () => {
+    try {
+      if (notificationStatus !== 'granted') {
+        await checkNotificationPermissions();
+        return;
+      }
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Test Bildirimi',
+          body: 'Bu bir test bildirimidir.',
+          data: { type: 'test' },
+        },
+        trigger: {
+          seconds: 2,
+          channelId: 'default',
+        },
+      });
+
+      console.log('Bildirim gönderildi');
+    } catch (error) {
+      console.error('Bildirim hatası:', error);
+      setError('Bildirim gönderilemedi');
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
       <View style={styles.formContainer}>
-        <Text h3 style={styles.title}>Giriş Yap</Text>
+        <View style={styles.logoContainer}>
+          <Icon
+            name="restaurant-menu"
+            size={60}
+            color="#007bff"
+          />
+          <Text h3 style={styles.title}>Restoran Yönetimi</Text>
+        </View>
+
         <Input
           placeholder="Kullanıcı Adı"
           value={username}
-          onChangeText={setUsername}
+          onChangeText={(text) => {
+            setUsername(text);
+            setError("");
+          }}
           containerStyle={styles.inputContainer}
           disabled={loading}
           autoCapitalize="none"
-          leftIcon={{ type: 'ionicon', name: 'person-outline' }}
+          leftIcon={{ type: 'ionicon', name: 'person-outline', color: '#007bff' }}
+          errorMessage={error && username.length === 0 ? "Kullanıcı adı gerekli" : ""}
         />
+
         <Input
           placeholder="Şifre"
           value={password}
-          onChangeText={setPassword}
-          secureTextEntry
+          onChangeText={(text) => {
+            setPassword(text);
+            setError("");
+          }}
+          secureTextEntry={!showPassword}
           containerStyle={styles.inputContainer}
           disabled={loading}
-          leftIcon={{ type: 'ionicon', name: 'lock-closed-outline' }}
+          leftIcon={{ type: 'ionicon', name: 'lock-closed-outline', color: '#007bff' }}
+          rightIcon={
+            <TouchableOpacity onPress={togglePasswordVisibility}>
+              <Icon
+                type="ionicon"
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                color="#007bff"
+              />
+            </TouchableOpacity>
+          }
+          errorMessage={error && password.length === 0 ? "Şifre gerekli" : ""}
         />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        {error && !error.includes("gerekli") && (
+          <Text style={styles.error}>{error}</Text>
+        )}
+
         <Button
           title={loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
           onPress={handleLogin}
           containerStyle={styles.buttonContainer}
           loading={loading}
           disabled={loading}
-        />
-        <Button
-          title="Hesap Oluştur"
-          onPress={navigateToRegister}
-          type="outline"
-          containerStyle={styles.buttonContainer}
-          disabled={loading}
+          icon={{
+            name: "login",
+            color: "white",
+            size: 20,
+          }}
         />
 
         <Button
-          title="Show Notification"
+          title="Hesap Oluştur"
+          onPress={() => router.push("/register")}
+          type="outline"
+          containerStyle={styles.buttonContainer}
+          disabled={loading}
+          icon={{
+            name: "person-add",
+            size: 20,
+          }}
+        />
+
+        <Button
+          title="Test Bildirimi Gönder"
           onPress={handleNotification}
+          type="clear"
+          containerStyle={styles.notificationButton}
+          icon={{
+            name: "notifications",
+            size: 20,
+            color: "#007bff"
+          }}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -170,7 +232,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 20,
   },
   formContainer: {
     flex: 1,
@@ -178,10 +239,16 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     width: "100%",
     alignSelf: "center",
+    paddingHorizontal: 20,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 40,
   },
   title: {
     textAlign: "center",
-    marginBottom: 30,
+    marginTop: 10,
+    color: "#333",
   },
   inputContainer: {
     marginBottom: 15,
@@ -190,10 +257,16 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 8,
   },
+  notificationButton: {
+    marginTop: 20,
+  },
   error: {
-    color: "red",
+    color: "#dc3545",
     textAlign: "center",
     marginBottom: 15,
+    padding: 10,
+    backgroundColor: "#ffe6e6",
+    borderRadius: 5,
   }
 });
 
