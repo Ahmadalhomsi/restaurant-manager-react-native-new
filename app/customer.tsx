@@ -104,25 +104,49 @@ const CustomerOrderUI = () => {
   };
 
 
+  const formatOrderForNotification = (order: OrderItem[]): string => {
+    const orderSummary = order
+      .map(item => `${item.name} (${item.quantity}x) - ${(item.price * item.quantity).toFixed(2)} TL`)
+      .join('\n');
+  
+    const totalAmount = order
+      .reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      .toFixed(2);
+  
+    return `Yeni Sipariş Detayları:\n\n${orderSummary}\n\nToplam: ${totalAmount} TL`;
+  };
+  
   const triggerNotification = async () => {
     try {
       console.log('Sending notification...');
       const token = await getPushToken();
       console.log('Push Token:', token);
-
-      const response = await api.post('/send-notification', {
+  
+      const notificationData = {
         pushToken: token,
-        title: 'New Order Received',
-        body: JSON.stringify(order),
-        data: { orderId: 123 },
-      });
-      const result = response;
-      console.log("+++++++++++");
-      console.log(result);
+        title: 'Yeni Sipariş Alındı',
+        body: formatOrderForNotification(order),
+        data: {
+          orderId: 123,
+          orderDetails: {
+            items: order.map(item => ({
+              id: item.id,
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              subtotal: item.price * item.quantity
+            })),
+            totalAmount: order.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            timestamp: new Date().toISOString()
+          }
+        },
+      };
+  
+      const response = await api.post('/send-notification', notificationData);
+      console.log("Notification Response:", response);
     } catch (error) {
       console.error('Error sending notification:', error);
     }
-
   };
 
   const handlePlaceOrder = async () => {
