@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "restaurantmanagerreactnativenew",
-    "slug": "expo-template-default",
+    "slug": "restaurantmanagerreactnativenew",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
