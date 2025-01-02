@@ -5,7 +5,7 @@ import * as Utils from "../utils/index";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import api from '@/utils/api';
-import { router} from "expo-router";
+import { router } from "expo-router";
 
 
 interface Product {
@@ -113,7 +113,7 @@ const CustomerOrderUI = () => {
       const response = await api.post('/send-notification', {
         pushToken: token,
         title: 'New Order Received',
-        body: 'You have a new order to review!',
+        body: JSON.stringify(order),
         data: { orderId: 123 },
       });
       const result = response;
@@ -295,26 +295,26 @@ const CustomerOrderUI = () => {
         </View>
       )}
       <Button
-          title="Profil Fotoğrafı"
-          onPress={navigateToProfile}
-          type="outline"
-          containerStyle={styles.buttonContainer}
-          disabled={loading}
-        />
-        <Button
-          title="Konum"
-          onPress={navigateToLocation}
-          type="outline"
-          containerStyle={styles.buttonContainer}
-          disabled={loading}
-        />
-        <Button
-  title="Yemek Öner"
-  onPress={() => router.push("sc")}
-  type="outline"
-  containerStyle={styles.buttonContainer}
-  disabled={loading}
-/>
+        title="Profil Fotoğrafı"
+        onPress={navigateToProfile}
+        type="outline"
+        containerStyle={styles.buttonContainer}
+        disabled={loading}
+      />
+      <Button
+        title="Konum"
+        onPress={navigateToLocation}
+        type="outline"
+        containerStyle={styles.buttonContainer}
+        disabled={loading}
+      />
+      <Button
+        title="Yemek Öner"
+        // onPress={() => router.push("sc")}
+        type="outline"
+        containerStyle={styles.buttonContainer}
+        disabled={loading}
+      />
 
     </View>
   );
