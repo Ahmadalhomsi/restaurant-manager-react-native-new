@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "restaurantmanagerreactnativenew",
-    "slug": "expo-template-default",
+    "slug": "restaurantmanagerreactnativenew",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -22,8 +22,15 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.MEDIA_LIBRARY_WRITE_ONLY",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.MEDIA_LIBRARY_WRITE_ONLY",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "package": "com.ahmadalhomsi.restaurantmanagerreactnativenew"
     },
     "web": {
       "bundler": "metro",
@@ -43,8 +50,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "6c231852-a9e3-4f41-a0ee-e0314748b198"
+        "projectId": "0c7bd349-db31-4d3f-b2e3-770abfd4f89d"
       }
-    }
+    },
+    "owner": "ahmadalhomsi"
   }
 }
