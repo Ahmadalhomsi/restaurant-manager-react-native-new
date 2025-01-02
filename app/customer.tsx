@@ -334,7 +334,7 @@ const CustomerOrderUI = () => {
       />
       <Button
         title="Yemek Öner"
-        // onPress={() => router.push("sc")}
+        onPress={() => router.push("/chatbot")}
         type="outline"
         containerStyle={styles.buttonContainer}
         disabled={loading}
