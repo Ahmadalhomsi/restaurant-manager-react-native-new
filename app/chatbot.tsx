@@ -9,27 +9,23 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useRouter } from "expo-router";
-import Icon from 'react-native-vector-icons/MaterialIcons'; // İkonlar için
-import { getAllProducts } from '@/utils'; // index.js'den getAllProducts fonksiyonunu içe aktar
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { getAllProducts } from '@/utils';
 
 const Chatbot = () => {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState<string>('');
-  const [products, setProducts] = useState<any[]>([]); // Tüm ürünler için state
+  const [products, setProducts] = useState<any[]>([]);
 
-
-   const router = useRouter();
-
-  const geminiApiKey = ''; // Buraya kendi API anahtarınızı koyun
-  const geminiApiUrl =
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' +
-    geminiApiKey;
+  const router = useRouter();
+  const geminiApiKey = 'YOUR_API_KEY';
+  const geminiApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + geminiApiKey;
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const productData = await getAllProducts(); // Veritabanından ürünleri al
+      const productData = await getAllProducts();
       if (productData) {
-        setProducts(productData); // Ürünleri state'e kaydet
+        setProducts(productData);
       }
     };
     fetchProducts();
@@ -69,7 +65,7 @@ const Chatbot = () => {
       const data = await response.json();
       const botMessage = {
         role: 'bot',
-        content: data.reply || 'Sorry, I didn\'t understand that.',
+        content: data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I didn\'t understand that.',
       };
       setMessages((prevMessages) => [...prevMessages, botMessage]);
     } catch (error) {
