@@ -22,8 +22,15 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.MEDIA_LIBRARY_WRITE_ONLY",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.MEDIA_LIBRARY_WRITE_ONLY",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "package": "com.ahmadalhomsi.restaurantmanagerreactnativenew"
     },
     "web": {
       "bundler": "metro",
