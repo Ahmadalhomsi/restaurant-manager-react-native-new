@@ -38,7 +38,7 @@ const LoginScreen = () => {
         router.replace(customerRole === "Admin" ? "/manager" : "/customer");
       }
     } catch (err) {
-      console.error("Session check error:", err);
+      console.log("Session check error:", err);
     }
   };
 
@@ -57,7 +57,7 @@ const LoginScreen = () => {
         console.log('Notification permissions not granted');
       }
     } catch (err) {
-      console.error("Permission check error:", err);
+      console.log("Permission check error:", err);
     }
   };
 
@@ -95,7 +95,7 @@ const LoginScreen = () => {
       router.replace(customer.role === "Admin" ? "/manager" : "/customer");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Giriş yapılırken bir hata oluştu");
-      console.error(err);
+      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -122,7 +122,7 @@ const LoginScreen = () => {
 
       console.log('Bildirim gönderildi');
     } catch (error) {
-      console.error('Bildirim hatası:', error);
+      console.log('Bildirim hatası:', error);
       setError('Bildirim gönderilemedi');
     }
   };
